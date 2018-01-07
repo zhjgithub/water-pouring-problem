@@ -104,29 +104,29 @@ def bridge_problem(here):
     '''
     here = frozenset(here) | frozenset(['light'])
     explored = set()  # set of states we have visited
-    # State will be a (people-here, people-there, time-elapsed)
+    # State will be a (people-here, people-there)
     # ordered list of path we have blazed
-    frontier = [[(here, frozenset(), 0)]]
+    frontier = [[(here, frozenset())]]
     if not here:
         return frontier[0]
     while frontier:
         path = frontier.pop(0)
-        here, _, _ = last_state = path[-1]
+        here, _ = last_state = path[-1]
         # Check for solution later when we pull best path
         if not here or here == set(['light']):
             return path
-        for (state, action) in bridge_successors(last_state).items():
+        pcost = path_cost(path)
+        explored.add(last_state)
+        for (state, action) in bridge_successors2(last_state).items():
             if state not in explored:
-                explored.add(state)
-                here, _, _ = state
-                path2 = path + [action, state]
+                path2 = path + [(action, pcost + bridge_cost(action)), state]
                 frontier.append(path2)
                 frontier.sort(key=elapsed_time)
     return Fail
 
 
 def elapsed_time(path):
-    return path[-1][2]
+    return path_cost(path)
 
 
 def path_cost(path):
@@ -231,17 +231,23 @@ class TestBridge:
 17
 
 ## There are two equally good solutions
->>> S1 = [(2, 1, '->'), (1, 1, '<-'), (5, 10, '->'), (2, 2, '<-'), (2, 1, '->')]
->>> S2 = [(2, 1, '->'), (2, 2, '<-'), (5, 10, '->'), (1, 1, '<-'), (2, 1, '->')]
+>>> S1 = [((2, 1, '->'), 2), ((1, 1, '<-'), 3), ((5, 10, '->'), 13), ((2, 2, '<-'), 15), ((2, 1, '->'), 17)]
+>>> S2 = [((2, 1, '->'), 2), ((2, 2, '<-'), 4), ((5, 10, '->'), 14), ((1, 1, '<-'), 15), ((2, 1, '->'), 17)]
 >>> path_actions(bridge_problem([1,2,5,10])) in (S1, S2)
 True
 
 ## Try some other problems
+>>> elapsed_time(bridge_problem([1,2,5,10,15,20]))
+42
+
 >>> path_actions(bridge_problem([1,2,5,10,15,20]))
-[(2, 1, '->'), (1, 1, '<-'), (10, 5, '->'), (2, 2, '<-'), (2, 1, '->'), (1, 1, '<-'), (15, 20, '->'), (2, 2, '<-'), (2, 1, '->')]
+[((2, 1, '->'), 2), ((1, 1, '<-'), 3), ((10, 5, '->'), 13), ((2, 2, '<-'), 15), ((2, 1, '->'), 17), ((1, 1, '<-'), 18), ((15, 20, '->'), 38), ((2, 2, '<-'), 40), ((2, 1, '->'), 42)]
+
+>>> elapsed_time(bridge_problem([1,2,4,8,16,32]))
+52
 
 >>> path_actions(bridge_problem([1,2,4,8,16,32]))
-[(2, 1, '->'), (1, 1, '<-'), (8, 4, '->'), (2, 2, '<-'), (2, 1, '->'), (1, 1, '<-'), (16, 32, '->'), (2, 2, '<-'), (2, 1, '->')]
+[((2, 1, '->'), 2), ((1, 1, '<-'), 3), ((8, 4, '->'), 11), ((2, 2, '<-'), 13), ((2, 1, '->'), 15), ((1, 1, '<-'), 16), ((16, 32, '->'), 48), ((2, 2, '<-'), 50), ((2, 1, '->'), 52)]
 
 >>> [elapsed_time(bridge_problem([1,2,4,8,16][:N])) for N in range(6)]
 [0, 1, 2, 7, 15, 28]
@@ -253,5 +259,5 @@ True
 
 
 if __name__ == '__main__':
-    # print(doctest.testmod())
+    print(doctest.testmod())
     test_bridge()
