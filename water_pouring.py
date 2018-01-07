@@ -82,7 +82,7 @@ def bridge_successors(state):
 
 def bridge_problem(here):
     '''
-    Bridge across problem.
+    Find the fastest (least elapsed time) path to the goal in the bridge problem.
     '''
 
     def elapsed_time(path):
@@ -91,23 +91,24 @@ def bridge_problem(here):
     here = frozenset(here) | frozenset(['light'])
     explored = set()  # set of states we have visited
     # State will be a (people-here, people-there, time-elapsed)
-    frontier = [[(here, frozenset(),
-                  0)]]  # ordered list of path we have blazed
+    # ordered list of path we have blazed
+    frontier = [[(here, frozenset(), 0)]]
     if not here:
         return frontier[0]
     while frontier:
         path = frontier.pop(0)
-        for (state, action) in bridge_successors(path[-1]).items():
+        here, _, _ = last_state = path[-1]
+        # Check for solution later when we pull best path
+        if not here or here == set('light'):
+            return path
+        for (state, action) in bridge_successors(last_state).items():
             if state not in explored:
                 explored.add(state)
                 here, _, _ = state
                 path2 = path + [action, state]
-                if not here:  # That is, nobody left here
-                    return path2
-                else:
-                    frontier.append(path2)
-                    frontier.sort(key=elapsed_time)
-    return []
+                frontier.append(path2)
+                frontier.sort(key=elapsed_time)
+    return Fail
 
 
 def test_bridge():
