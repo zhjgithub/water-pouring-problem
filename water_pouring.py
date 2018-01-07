@@ -2,6 +2,8 @@
 Water pouring problem.
 '''
 
+import doctest
+
 Fail = []
 
 
@@ -23,7 +25,7 @@ def pour_problem(X, Y, goal, start=(0, 0)):
             if state not in explored:
                 explored.add(state)
                 path2 = path + [action, state]
-                if goal in path2:
+                if goal in state:
                     return path2
                 else:
                     frontier.append(path2)
@@ -44,3 +46,37 @@ def successors(x, y, X, Y):
         (0, y): 'empty X',
         (x, 0): 'empty Y'
     }
+
+
+class Test:
+    '''
+>>> successors(0, 0, 4, 9)
+{(0, 9): 'fill Y', (0, 0): 'empty Y', (4, 0): 'fill X'}
+
+>>> successors(3, 5, 4, 9)
+{(4, 5): 'fill X', (4, 4): 'X<-Y', (3, 0): 'empty Y', (3, 9): 'fill Y', (0, 5): 'empty X', (0, 8): 'X->Y'}
+
+>>> successors(3, 7, 4, 9)
+{(4, 7): 'fill X', (4, 6): 'X<-Y', (3, 0): 'empty Y', (0, 7): 'empty X', (3, 9): 'fill Y', (1, 9): 'X->Y'}
+
+>>> pour_problem(4, 9, 6)
+[(0, 0), 'fill Y', (0, 9), 'X<-Y', (4, 5), 'empty X', (0, 5), 'X<-Y', (4, 1), 'empty X', (0, 1), 'X<-Y', (1, 0), 'fill Y', (1, 9), 'X<-Y', (4, 6)]
+
+## what problem, with X, Y, and goal < 10, has the longest solution?
+## Answer: pour_problem(7, 9, 8), with 14 steps.
+
+>>> def num_actions(triplet): X, Y, goal = triplet; return len(pour_problem(X, Y, goal)) // 2
+
+>>> def hardness(triplet): X, Y, goal = triplet; return num_actions((X, Y, goal)) - max(X, Y)
+
+>>> max([(X, Y, goal) for X in range(1, 10) for Y in range(1, 10)
+...                   for goal in range(1, max(X, Y))], key=num_actions)
+(7, 9, 8)
+
+>>> pour_problem(7, 9, 8)
+[(0, 0), 'fill Y', (0, 9), 'X<-Y', (7, 2), 'empty X', (0, 2), 'X<-Y', (2, 0), 'fill Y', (2, 9), 'X<-Y', (7, 4), 'empty X', (0, 4), 'X<-Y', (4, 0), 'fill Y', (4, 9), 'X<-Y', (7, 6), 'empty X', (0, 6), 'X<-Y', (6, 0), 'fill Y', (6, 9), 'X<-Y', (7, 8)]
+'''
+
+
+if __name__ == '__main__':
+    print(doctest.testmod())
