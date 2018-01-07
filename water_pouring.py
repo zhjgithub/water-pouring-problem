@@ -99,7 +99,7 @@ def bridge_problem(here):
         path = frontier.pop(0)
         here, _, _ = last_state = path[-1]
         # Check for solution later when we pull best path
-        if not here or here == set('light'):
+        if not here or here == set(['light']):
             return path
         for (state, action) in bridge_successors(last_state).items():
             if state not in explored:
