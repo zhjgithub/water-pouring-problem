@@ -153,7 +153,7 @@ def missionaries_cannibals_successors(state):
     """Find successors (including those that result in dining) to this
     state. But a state where the cannibals can dine has no successors."""
     M1, C1, B1, M2, C2, B2 = state
-    if M1 < C1 or M2 < C2:
+    if 0 < M1 < C1 or 0 < M2 < C2:
         return {}
 
     result = {}
@@ -246,6 +246,10 @@ def test_missionaries_cannibals():
         (2, 2, 1, 3, 2, 0): '<-MC'
     }
     assert missionaries_cannibals_successors((1, 4, 1, 2, 2, 0)) == {}
+    assert missionaries_cannibals_successors((0, 2, 1, 3, 1, 0)) == {
+        (0, 1, 0, 3, 2, 1): 'C->',
+        (0, 0, 0, 3, 3, 1): 'CC->'
+    }
     print('missionaries and cannibals problem tests pass')
 
 
