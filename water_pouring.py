@@ -149,6 +149,40 @@ def bridge_cost(action):
     return max(a, b)
 
 
+def missionaries_cannibals_successors(state):
+    """Find successors (including those that result in dining) to this
+    state. But a state where the cannibals can dine has no successors."""
+    M1, C1, B1, M2, C2, B2 = state
+    if M1 < C1 or M2 < C2:
+        return {}
+
+    result = {}
+    if B1:
+        if M1 >= 1:
+            result[(M1 - 1, C1, B2, M2 + 1, C2, B1)] = 'M->'
+            if M1 >= 2:
+                result[(M1 - 2, C1, B2, M2 + 2, C2, B1)] = 'MM->'
+        if C1 >= 1:
+            result[(M1, C1 - 1, B2, M2, C2 + 1, B1)] = 'C->'
+            if C1 >= 2:
+                result[(M1, C1 - 2, B2, M2, C2 + 2, B1)] = 'CC->'
+        if M1 > 0 and C1 > 0:
+            result[(M1 - 1, C1 - 1, B2, M2 + 1, C2 + 1, B1)] = 'MC->'
+    else:
+        if M2 >= 1:
+            result[(M1 + 1, C1, B2, M2 - 1, C2, B1)] = '<-M'
+            if M2 >= 2:
+                result[(M1 + 2, C1, B2, M2 - 2, C2, B1)] = '<-MM'
+        if C2 >= 1:
+            result[(M1, C1 + 1, B2, M2, C2 - 1, B1)] = '<-C'
+            if C2 >= 2:
+                result[(M1, C1 + 2, B2, M2, C2 - 2, B1)] = '<-CC'
+        if M2 > 0 and C2 > 0:
+            result[(M1 + 1, C1 + 1, B2, M2 - 1, C2 - 1, B1)] = '<-MC'
+
+    return result
+
+
 def test_bridge():
     "tests."
     assert bridge_successors((frozenset([1, 'light']), frozenset([]), 3)) == {
@@ -193,6 +227,26 @@ def test_bridge():
         (3, 10, '<-'), ) == 10
 
     print('bridge tests pass')
+
+
+def test_missionaries_cannibals():
+    "Missionaries and cannibals problem tests."
+    assert missionaries_cannibals_successors((2, 2, 1, 0, 0, 0)) == {
+        (2, 1, 0, 0, 1, 1): 'C->',
+        (1, 2, 0, 1, 0, 1): 'M->',
+        (0, 2, 0, 2, 0, 1): 'MM->',
+        (1, 1, 0, 1, 1, 1): 'MC->',
+        (2, 0, 0, 0, 2, 1): 'CC->'
+    }
+    assert missionaries_cannibals_successors((1, 1, 0, 4, 3, 1)) == {
+        (1, 2, 1, 4, 2, 0): '<-C',
+        (2, 1, 1, 3, 3, 0): '<-M',
+        (3, 1, 1, 2, 3, 0): '<-MM',
+        (1, 3, 1, 4, 1, 0): '<-CC',
+        (2, 2, 1, 3, 2, 0): '<-MC'
+    }
+    assert missionaries_cannibals_successors((1, 4, 1, 2, 2, 0)) == {}
+    print('missionaries and cannibals problem tests pass')
 
 
 class Test:
@@ -259,5 +313,6 @@ True
 
 
 if __name__ == '__main__':
-    print(doctest.testmod())
+    # print(doctest.testmod())
     test_bridge()
+    test_missionaries_cannibals()
