@@ -32,6 +32,16 @@ def pour_problem(X, Y, goal, start=(0, 0)):
     return Fail
 
 
+def path_states(path):
+    "Return a list of states in this path."
+    return path[0::2]
+
+
+def path_actions(path):
+    "Return a list of actions in this path."
+    return path[1::2]
+
+
 def successors(x, y, X, Y):
     '''
     Return a dict of {state: action} pairs describing what can be reached
