@@ -84,10 +84,6 @@ def bridge_problem(here):
     '''
     Find the fastest (least elapsed time) path to the goal in the bridge problem.
     '''
-
-    def elapsed_time(path):
-        return path[-1][2]
-
     here = frozenset(here) | frozenset(['light'])
     explored = set()  # set of states we have visited
     # State will be a (people-here, people-there, time-elapsed)
@@ -109,6 +105,10 @@ def bridge_problem(here):
                 frontier.append(path2)
                 frontier.sort(key=elapsed_time)
     return Fail
+
+
+def elapsed_time(path):
+    return path[-1][2]
 
 
 def test_bridge():
@@ -154,6 +154,33 @@ class Test:
 >>> pour_problem(7, 9, 8)
 [(0, 0), 'fill Y', (0, 9), 'X<-Y', (7, 2), 'empty X', (0, 2), 'X<-Y', (2, 0), 'fill Y', (2, 9), 'X<-Y', (7, 4), 'empty X', (0, 4), 'X<-Y', (4, 0), 'fill Y', (4, 9), 'X<-Y', (7, 6), 'empty X', (0, 6), 'X<-Y', (6, 0), 'fill Y', (6, 9), 'X<-Y', (7, 8)]
 '''
+
+
+class TestBridge:
+    """
+>>> elapsed_time(bridge_problem([1,2,5,10]))
+17
+
+## There are two equally good solutions
+>>> S1 = [(2, 1, '->'), (1, 1, '<-'), (5, 10, '->'), (2, 2, '<-'), (2, 1, '->')]
+>>> S2 = [(2, 1, '->'), (2, 2, '<-'), (5, 10, '->'), (1, 1, '<-'), (2, 1, '->')]
+>>> path_actions(bridge_problem([1,2,5,10])) in (S1, S2)
+True
+
+## Try some other problems
+>>> path_actions(bridge_problem([1,2,5,10,15,20]))
+[(2, 1, '->'), (1, 1, '<-'), (10, 5, '->'), (2, 2, '<-'), (2, 1, '->'), (1, 1, '<-'), (15, 20, '->'), (2, 2, '<-'), (2, 1, '->')]
+
+>>> path_actions(bridge_problem([1,2,4,8,16,32]))
+[(2, 1, '->'), (1, 1, '<-'), (8, 4, '->'), (2, 2, '<-'), (2, 1, '->'), (1, 1, '<-'), (16, 32, '->'), (2, 2, '<-'), (2, 1, '->')]
+
+>>> [elapsed_time(bridge_problem([1,2,4,8,16][:N])) for N in range(6)]
+[0, 1, 2, 7, 15, 28]
+
+>>> [elapsed_time(bridge_problem([1,1,2,3,5,8,13,21][:N])) for N in range(8)]
+[0, 1, 1, 2, 6, 12, 19, 30]
+
+"""
 
 
 if __name__ == '__main__':
