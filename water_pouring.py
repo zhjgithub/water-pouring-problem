@@ -80,6 +80,36 @@ def bridge_successors(state):
                     if a is not light for b in there if b is not light)
 
 
+def bridge_problem(here):
+    '''
+    Bridge across problem.
+    '''
+
+    def elapsed_time(path):
+        return path[-1][2]
+
+    here = frozenset(here) | frozenset(['light'])
+    explored = set()  # set of states we have visited
+    # State will be a (people-here, people-there, time-elapsed)
+    frontier = [[(here, frozenset(),
+                  0)]]  # ordered list of path we have blazed
+    if not here:
+        return frontier[0]
+    while frontier:
+        path = frontier.pop(0)
+        for (state, action) in bridge_successors(path[-1]).items():
+            if state not in explored:
+                explored.add(state)
+                here, _, _ = state
+                path2 = path + [action, state]
+                if not here:  # That is, nobody left here
+                    return path2
+                else:
+                    frontier.append(path2)
+                    frontier.sort(key=elapsed_time)
+    return []
+
+
 def test_bridge():
     "tests."
     assert bridge_successors((frozenset([1, 'light']), frozenset([]), 3)) == {
@@ -89,6 +119,8 @@ def test_bridge():
     assert bridge_successors((frozenset([]), frozenset([2, 'light']), 0)) == {
         (frozenset([2, 'light']), frozenset([]), 2): (2, 2, '<-')
     }
+
+    print(path_actions(bridge_problem([1, 2, 5, 10])))
 
     print('bridge tests pass')
 
