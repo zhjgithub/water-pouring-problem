@@ -80,6 +80,24 @@ def bridge_successors(state):
                     if a is not light for b in there if b is not light)
 
 
+def bridge_successors2(state):
+    """Return a dict of {state:action} pairs. A state is a
+    (here, there) tuple, where here and there are frozensets
+    of people (indicated by their travel times) and/or the light."""
+    here, there = state
+    light = 'light'
+    if light in here:
+        return dict(((here - frozenset([a, b, light]),
+                      there | frozenset([a, b, light])), (a, b, '->'))
+                    for a in here
+                    if a is not light for b in here if b is not light)
+    else:
+        return dict(((here | frozenset([a, b, light]),
+                      there - frozenset([a, b, light])), (a, b, '<-'))
+                    for a in there
+                    if a is not light for b in there if b is not light)
+
+
 def bridge_problem(here):
     '''
     Find the fastest (least elapsed time) path to the goal in the bridge problem.
@@ -122,6 +140,29 @@ def test_bridge():
     }
 
     print(path_actions(bridge_problem([1, 2, 5, 10])))
+
+    here1 = frozenset([1, 'light'])
+    there1 = frozenset([])
+
+    here2 = frozenset([1, 2, 'light'])
+    there2 = frozenset([3])
+
+    here3 = frozenset([2])
+    there3 = frozenset([1, 3, 'light'])
+
+    assert bridge_successors2((here1, there1)) == {
+        (frozenset([]), frozenset([1, 'light'])): (1, 1, '->')
+    }
+    assert bridge_successors2((here2, there2)) == {
+        (frozenset([1]), frozenset(['light', 2, 3])): (2, 2, '->'),
+        (frozenset([2]), frozenset([1, 3, 'light'])): (1, 1, '->'),
+        (frozenset([]), frozenset([1, 2, 3, 'light'])): (2, 1, '->')
+    }
+    assert bridge_successors2((here3, there3)) == {
+        (frozenset([1, 2, 3, 'light']), frozenset([])): (3, 1, '<-'),
+        (frozenset([1, 2, 'light']), frozenset([3])): (1, 1, '<-'),
+        (frozenset([2, 3, 'light']), frozenset([1])): (3, 3, '<-')
+    }
 
     print('bridge tests pass')
 
@@ -184,5 +225,5 @@ True
 
 
 if __name__ == '__main__':
-    print(doctest.testmod())
+    # print(doctest.testmod())
     test_bridge()
