@@ -48,6 +48,41 @@ def successors(x, y, X, Y):
     }
 
 
+def bridge_successors(state):
+    """Return a dict of {state:action} pairs. A state is a (here, there, t) tuple,
+    where here and there are frozensets of people (indicated by their times) and/or
+    the 'light', and t is a number indicating the elapsed time. Action is represented
+    as a tuple (person1, person2, arrow), where arrow is '->' for here to there and
+    '<-' for there to here."""
+    here, there, t = state
+    light = 'light'
+    if light in here:
+        return dict(((here - frozenset([a, b, light]),
+                      there | frozenset([a, b, light]), t + max(a, b)), (a, b,
+                                                                         '->'))
+                    for a in here
+                    if a is not light for b in here if b is not light)
+    else:
+        return dict(((here | frozenset([a, b, light]),
+                      there - frozenset([a, b, light]), t + max(a, b)), (a, b,
+                                                                         '<-'))
+                    for a in there
+                    if a is not light for b in there if b is not light)
+
+
+def test_bridge():
+    "tests."
+    assert bridge_successors((frozenset([1, 'light']), frozenset([]), 3)) == {
+        (frozenset([]), frozenset([1, 'light']), 4): (1, 1, '->')
+    }
+
+    assert bridge_successors((frozenset([]), frozenset([2, 'light']), 0)) == {
+        (frozenset([2, 'light']), frozenset([]), 2): (2, 2, '<-')
+    }
+
+    print('bridge tests pass')
+
+
 class Test:
     '''
 >>> successors(0, 0, 4, 9)
@@ -80,3 +115,4 @@ class Test:
 
 if __name__ == '__main__':
     print(doctest.testmod())
+    test_bridge()
