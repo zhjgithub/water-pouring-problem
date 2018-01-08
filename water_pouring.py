@@ -7,6 +7,26 @@ import doctest
 Fail = []
 
 
+def shortest_path_search(start, successors, is_goal):
+    """Find the shortest path from start state to a state
+    such that is_goal(state) is true."""
+    if is_goal(start):
+        return [start]
+    explored = set()
+    frontier = [[start]]
+    while frontier:
+        path = frontier.pop(0)
+        last_state = path[-1]
+        if is_goal(last_state):
+            return path
+        explored.add(last_state)
+        for state, action in successors(last_state).items():
+            if state not in explored:
+                path2 = path + [action, state]
+                frontier.append(path2)
+    return Fail
+
+
 def pour_problem(X, Y, goal, start=(0, 0)):
     '''
     X and Y are the capacity of glasses; (x, y) is current fill levels and represents a state.
@@ -281,6 +301,24 @@ def test_missionaries_cannibals():
     print('missionaries and cannibals problem tests pass')
 
 
+def test_shortest_path_search():
+    "shortest path search tests."
+
+    def is_goal(state):
+        if state == 8:
+            return True
+        else:
+            return False
+
+    def test_successors(state):
+        result = {state + 1: '->', state - 1: '<-'}
+        return result
+
+    assert shortest_path_search(5, test_successors,
+                                is_goal) == [5, '->', 6, '->', 7, '->', 8]
+    print('shortest path search tests success')
+
+
 class Test:
     '''
 >>> successors(0, 0, 4, 9)
@@ -348,3 +386,4 @@ if __name__ == '__main__':
     # print(doctest.testmod())
     test_bridge()
     test_missionaries_cannibals()
+    test_shortest_path_search()
