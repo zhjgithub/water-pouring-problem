@@ -169,27 +169,14 @@ def bridge_problem(here):
     '''
     Find the fastest (least elapsed time) path to the goal in the bridge problem.
     '''
-    here = frozenset(here) | frozenset(['light'])
-    explored = set()  # set of states we have visited
-    # State will be a (people-here, people-there)
-    # ordered list of path we have blazed
-    frontier = [[(here, frozenset())]]
-    if not here:
-        return frontier[0]
-    while frontier:
-        path = frontier.pop(0)
-        here, _ = last_state = path[-1]
-        # Check for solution later when we pull best path
-        if not here or here == set(['light']):
-            return path
-        pcost = path_cost(path)
-        explored.add(last_state)
-        for (state, action) in bridge_successors2(last_state).items():
-            if state not in explored:
-                path2 = path + [(action, pcost + bridge_cost(action)), state]
-                frontier.append(path2)
-                frontier.sort(key=elapsed_time)
-    return Fail
+
+    def bridge_goal(state):
+        here, _ = state
+        return not here or len(here) == 1 and 'light' in here
+
+    start = (frozenset(here) | frozenset(['light']), frozenset())
+    return lowest_cost_search(start, bridge_successors2, bridge_goal,
+                              bridge_cost)
 
 
 def elapsed_time(path):
@@ -278,6 +265,17 @@ def test_bridge():
     }
 
     print(path_actions(bridge_problem([1, 2, 5, 10])))
+    here = [1, 2, 5, 10]
+    assert bridge_problem(here) == [
+        (frozenset([1, 2, 'light', 10, 5]), frozenset([])), (
+            (2, 1, '->'), 2), (frozenset([10, 5]), frozenset([1, 2, 'light'])),
+        ((2, 2, '<-'), 4), (frozenset(['light', 10, 2, 5]), frozenset([1])), (
+            (5, 10,
+             '->'), 14), (frozenset([2]), frozenset([1, 10, 5, 'light'])), (
+                 (1, 1, '<-'), 15), (frozenset([1, 2, 'light']), frozenset(
+                     [10, 5])), ((2, 1, '->'), 17), (frozenset([]), frozenset(
+                         [1, 10, 2, 5, 'light']))
+    ]
 
     here1 = frozenset([1, 'light'])
     there1 = frozenset([])
