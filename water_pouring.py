@@ -178,22 +178,12 @@ def missionaries_cannibals_problem(start=(3, 3, 1, 0, 0, 0), goal=None):
     '''
     if goal is None:
         goal = (0, 0, 0) + start[:3]
-    if start == goal:
-        return [start]
-    explored = set()
-    frontier = [[start]]
-    while frontier:
-        path = frontier.pop(0)
-        last_state = path[-1]
-        if last_state == goal:
-            return path
-        explored.add(last_state)
-        for state, action in missionaries_cannibals_successors(
-                last_state).items():
-            if state not in explored:
-                path2 = path + [action, state]
-                frontier.append(path2)
-    return Fail
+
+    def is_goal(state):
+        return state == goal
+
+    return shortest_path_search(start, missionaries_cannibals_successors,
+                                is_goal)
 
 
 def missionaries_cannibals_successors(state):
