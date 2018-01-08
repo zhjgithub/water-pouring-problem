@@ -165,6 +165,27 @@ def bridge_successors2(state):
                     if a is not light for b in there if b is not light)
 
 
+def bridge_successors3(state):
+    """Return a dict of {state:action} pairs.  State is (here, there, light)
+    where here and there are frozen sets of people, light is 0 if the light is
+    on the here side and 1 if it is on the there side.
+    Action is a tuple (travelers, arrow) where arrow is '->' or '<-'"""
+
+    def generate_successor(state, travelers):
+        _, _, light = state
+        start = state[light] - travelers
+        dest = state[1 - light] | travelers
+        if light:
+            return (dest, start, 0), (travelers, '<-')
+        else:
+            return (start, dest, 1), (travelers, '->')
+
+    _, _, light = state
+    return dict(
+        generate_successor(state, set([a, b]))
+        for a in state[light] for b in state[light])
+
+
 def bridge_problem(here):
     '''
     Find the fastest (least elapsed time) path to the goal in the bridge problem.
@@ -307,6 +328,22 @@ def test_bridge():
         (4, 2, '->'), ) == 4
     assert bridge_cost(
         (3, 10, '<-'), ) == 10
+
+    assert bridge_successors3((frozenset([1]), frozenset([]), 0)) == {
+        (frozenset([]), frozenset([1]), 1): (set([1]), '->')
+    }
+
+    assert bridge_successors3((frozenset([1, 2]), frozenset([]), 0)) == {
+        (frozenset([1]), frozenset([2]), 1): (set([2]), '->'),
+        (frozenset([]), frozenset([1, 2]), 1): (set([1, 2]), '->'),
+        (frozenset([2]), frozenset([1]), 1): (set([1]), '->')
+    }
+
+    assert bridge_successors3((frozenset([2, 4]), frozenset([3, 5]), 1)) == {
+        (frozenset([2, 4, 5]), frozenset([3]), 0): (set([5]), '<-'),
+        (frozenset([2, 3, 4, 5]), frozenset([]), 0): (set([3, 5]), '<-'),
+        (frozenset([2, 3, 4]), frozenset([5]), 0): (set([3]), '<-')
+    }
 
     print('bridge tests pass')
 
