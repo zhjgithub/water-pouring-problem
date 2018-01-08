@@ -77,6 +77,48 @@ def pour_problem(X, Y, goal, start=(0, 0)):
     return Fail
 
 
+def more_pour_problem(capacities, goal, start=None):
+    """The first argument is a tuple of capacities (numbers) of glasses; the
+    goal is a number which we must achieve in some glass.  start is a tuple
+    of starting levels for each glass; if None, that means 0 for all.
+    Start at start state and follow successors until we reach the goal.
+    Keep track of frontier and previously explored; fail when no frontier.
+    On success return a path: a [state, action, state2, ...] list, where an
+    action is one of ('fill', i), ('empty', i), ('pour', i, j), where
+    i and j are indices indicating the glass number."""
+
+    def is_goal(state):
+        return goal in state
+
+    def replace(state, pos, value):
+        result = list(state)
+        result[pos] = value
+        return type(state)(result)
+
+    def successors(state):
+        result = {}
+        indices = range(len(state))
+        for i in indices:
+            result[replace(state, i, capacities[i])] = ('fill', i)
+            result[replace(state, i, 0)] = ('empty', i)
+            for j in indices:
+                if i != j:
+                    amount = min(state[i], capacities[j] - state[j])
+                    new_state = replace(state, i, state[i] - amount)
+                    new_state = replace(new_state, j, state[j] + amount)
+                    result[new_state] = ('pour', i, j)
+
+        return dict(result)
+
+    if goal % 2 == 1 and all(map(lambda x: x % 2 == 0, capacities)):
+        return Fail
+    if all(map(lambda x: x < goal, capacities)):
+        return Fail
+    if start is None:
+        start = (0, ) * len(capacities)
+    return shortest_path_search(start, successors, is_goal)
+
+
 def add_to_frontier(frontier, path):
     "Add path to frontier, replacing costlier path if there is one."
     # (This could be done more efficiently.)
@@ -391,6 +433,19 @@ def test_shortest_path_search():
     print('shortest path search tests success')
 
 
+def test_more_pour():
+    "test pour problem."
+    assert more_pour_problem((1, 2, 4, 8), 4) == [(0, 0, 0, 0), ('fill', 2),
+                                                  (0, 0, 4, 0)]
+    assert more_pour_problem((1, 2, 4), 3) == [(0, 0, 0), ('fill', 2), (
+        0, 0, 4), ('pour', 2, 0), (1, 0, 3)]
+    starbucks = (8, 12, 16, 20, 24)
+    assert not any(more_pour_problem(starbucks, odd) for odd in (3, 5, 7, 9))
+    assert all(more_pour_problem((1, 3, 9, 27), n) for n in range(28))
+    assert more_pour_problem((1, 3, 9, 27), 28) == []
+    print('test_more_pour passes')
+
+
 class Test:
     '''
 >>> successors(0, 0, 4, 9)
@@ -459,3 +514,4 @@ if __name__ == '__main__':
     test_bridge()
     test_missionaries_cannibals()
     test_shortest_path_search()
+    test_more_pour()
