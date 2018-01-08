@@ -149,6 +149,33 @@ def bridge_cost(action):
     return max(a, b)
 
 
+def missionaries_cannibals_problem(start=(3, 3, 1, 0, 0, 0), goal=None):
+    '''
+    Solve the missionaries and cannibals problem.
+    State is 6 ints: (M1, C1, B1, M2, C2, B2) on the start (1) and other (2) sides.
+    Find a path that goes from the initial state to the goal state (which if not specified,
+    is the state with no people or boats on the start side.)
+    '''
+    if goal is None:
+        goal = (0, 0, 0) + start[:3]
+    if start == goal:
+        return [start]
+    explored = set()
+    frontier = [[start]]
+    while frontier:
+        path = frontier.pop(0)
+        last_state = path[-1]
+        if last_state == goal:
+            return path
+        explored.add(last_state)
+        for state, action in missionaries_cannibals_successors(
+                last_state).items():
+            if state not in explored:
+                path2 = path + [action, state]
+                frontier.append(path2)
+    return Fail
+
+
 def missionaries_cannibals_successors(state):
     """Find successors (including those that result in dining) to this
     state. But a state where the cannibals can dine has no successors."""
@@ -250,6 +277,7 @@ def test_missionaries_cannibals():
         (0, 1, 0, 3, 2, 1): 'C->',
         (0, 0, 0, 3, 3, 1): 'CC->'
     }
+    print(missionaries_cannibals_problem())
     print('missionaries and cannibals problem tests pass')
 
 
